@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>
+        AI What Happened?
+    </title>
+
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='style.css') }}"
+    >
+
+</head>
+
+
+<body>
+
+<div class="container">
+
+    <!-- HEADER -->
+
+    <header>
+
+        <h1>
+            AI "What Happened?"
+        </h1>
+
+        <p>
+            Intelligent Video Analysis System
+        </p>
+
+    </header>
+
+
+    <!-- UPLOAD -->
+
+    <section class="upload-card">
+
+        <h2>
+            Upload Video
+        </h2>
+
+        <p>
+            Upload a video and let AI analyze
+            what is visible throughout the recording.
+        </p>
+
+        <form
+            action="/analyze"
+            method="POST"
+            enctype="multipart/form-data"
+        >
+
+            <input
+                type="file"
+                name="video"
+                accept="video/*"
+                required
+            >
+
+            <button
+                type="submit"
+                id="analyzeButton"
+            >
+                Analyze Video
+            </button>
+
+        </form>
+
+    </section>
+
+
+    <!-- ERROR -->
+
+    {% if error %}
+
+    <div class="error">
+
+        {{ error }}
+
+    </div>
+
+    {% endif %}
+
+
+    <!-- RESULTS -->
+
+    {% if result and result.success %}
+
+    <section class="results">
+
+        <h2>
+            Video Analysis Results
+        </h2>
+
+
+        <!-- STATISTICS -->
+
+        <div class="grid">
+
+            <div class="stat-card">
+
+                <h3>
+                    Duration
+                </h3>
+
+                <p>
+                    {{ result.duration }} sec
+                </p>
+
+            </div>
+
+
+            <div class="stat-card">
+
+                <h3>
+                    Frames
+                </h3>
+
+                <p>
+                    {{ result.analyzed_frames }}
+                </p>
+
+            </div>
+
+
+            <div class="stat-card">
+
+                <h3>
+                    FPS
+                </h3>
+
+                <p>
+                    {{ result.fps }}
+                </p>
+
+            </div>
+
+
+            <div class="stat-card">
+
+                <h3>
+                    Activity
+                </h3>
+
+                <p>
+                    {{ result.activity.level }}
+                </p>
+
+            </div>
+
+        </div>
+
+
+        <!-- WHAT HAPPENED -->
+
+        <div class="description-card">
+
+            <h2>
+                What Happened?
+            </h2>
+
+            {% for paragraph in result.description.split('\n\n') %}
+
+            <p>
+                {{ paragraph }}
+            </p>
+
+            {% endfor %}
+
+        </div>
+
+
+        <!-- TIMELINE -->
+
+        <div class="result-card">
+
+            <h2>
+                AI Video Timeline
+            </h2>
+
+
+            {% if result.timeline and result.timeline|length > 0 %}
+
+
+                {% for event in result.timeline %}
+
+                <div class="event">
+
+                    <div class="event-time">
+
+                        {{ event.time }} sec
+
+                    </div>
+
+
+                    <div>
+
+                        <strong>
+                            {{ event.activity }}
+                            Activity
+                        </strong>
+
+
+                        <p>
+                            {{ event.caption }}
+                        </p>
+
+
+                        {% if event.objects %}
+
+                        <p>
+
+                            <strong>
+                                Objects:
+                            </strong>
+
+                            {{ event.objects|join(", ") }}
+
+                        </p>
+
+                        {% endif %}
+
+
+                        <small>
+
+                            Motion Score:
+                            {{ event.motion }}
+
+                        </small>
+
+                    </div>
+
+                </div>
+
+                {% endfor %}
+
+
+            {% else %}
+
+                <p>
+                    No timeline information available.
+                </p>
+
+            {% endif %}
+
+        </div>
+
+
+        <!-- OBJECTS -->
+
+        <div class="result-card">
+
+            <h2>
+                Detected Objects
+            </h2>
+
+
+            {% if result.objects %}
+
+            <table>
+
+                <tr>
+
+                    <th>
+                        Object
+                    </th>
+
+                    <th>
+                        Detections
+                    </th>
+
+                </tr>
+
+
+                {% for object, count
+                in result.objects.items() %}
+
+                <tr>
+
+                    <td>
+                        {{ object }}
+                    </td>
+
+                    <td>
+                        {{ count }}
+                    </td>
+
+                </tr>
+
+                {% endfor %}
+
+            </table>
+
+
+            {% else %}
+
+            <p>
+                No recognizable objects detected.
+            </p>
+
+            {% endif %}
+
+        </div>
+
+
+        <!-- TECHNICAL DETAILS -->
+
+        <div class="result-card">
+
+            <h2>
+                Technical Analysis
+            </h2>
+
+            <p>
+                Resolution:
+                {{ result.width }}
+                ×
+                {{ result.height }}
+            </p>
+
+            <p>
+                Total Frames:
+                {{ result.total_frames }}
+            </p>
+
+            <p>
+                Frames Analyzed:
+                {{ result.analyzed_frames }}
+            </p>
+
+            <p>
+                Average Motion:
+                {{ result.activity.average }}
+            </p>
+
+        </div>
+
+
+        <!-- LIMITATION -->
+
+        <div class="notice">
+
+            <h3>
+                Analysis Note
+            </h3>
+
+            <p>
+                The system describes visible
+                computer-vision observations.
+                Object detection and movement
+                analysis cannot independently
+                determine the exact intention
+                or cause of an event.
+            </p>
+
+        </div>
+
+    </section>
+
+    {% endif %}
+
+</div>
+
+
+<script
+    src="{{ url_for('static', filename='script.js') }}"
+></script>
+
+</body>
+
+</html>
